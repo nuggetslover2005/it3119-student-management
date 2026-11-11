@@ -68,10 +68,10 @@ export async function renderCourses() {
 }
 
 async function getDepartments() {
-  const { data, error } = await supabase
-    .from('departments')
-    .select('department_id, department_name')
-    .order('department_name')
+  const { data: courses, error } = await supabase
+  .from('courses')
+  .select('*')
+  .order('course_id', { ascending: true })
 
   if (error) {
     alert('Unable to load departments: ' + error.message)
