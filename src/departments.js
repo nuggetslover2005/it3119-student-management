@@ -67,10 +67,10 @@ export async function renderDepartments() {
 async function loadDepartments(search = '') {
   const table = document.querySelector('#department-table')
 
-  const { data: departments, error } = await supabase
-    .from('departments')
-    .select('department_id, department_name')
-    .order('department_id')
+    const { data: departments, error } = await supabase
+  .from('departments')
+  .select('department_id, department_name')
+  .order('department_id', { ascending: true })
 
   if (error) {
     table.textContent = 'Error loading departments: ' + error.message
