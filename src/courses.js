@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js'
 
+// Render Courses Page
 export async function renderCourses() {
   const app = document.querySelector('#app')
 
@@ -43,6 +44,7 @@ export async function renderCourses() {
     </div>
   `
 
+  // Navigation
   document.querySelector('#dashboard-link').onclick = e => {
     e.preventDefault()
     window.location.href = '/'
@@ -58,20 +60,24 @@ export async function renderCourses() {
     import('./departments.js').then(m => m.renderDepartments())
   }
 
+  // Search Courses
   document.querySelector('#search-course').oninput = e => {
     loadCourses(e.target.value)
   }
 
+  // Add Course
   document.querySelector('#add-course-btn').onclick = addCourse
 
   await loadCourses()
 }
 
+
+// Get Departments
 async function getDepartments() {
-  const { data: courses, error } = await supabase
-  .from('courses')
-  .select('*')
-  .order('course_id', { ascending: true })
+  const { data, error } = await supabase
+    .from('departments')
+    .select('department_id, department_name')
+    .order('department_id', { ascending: true })
 
   if (error) {
     alert('Unable to load departments: ' + error.message)
@@ -81,6 +87,8 @@ async function getDepartments() {
   return data
 }
 
+
+// Load Courses
 async function loadCourses(search = '') {
   const table = document.querySelector('#course-table')
 
@@ -97,7 +105,7 @@ async function loadCourses(search = '') {
         department_name
       )
     `)
-    .order('course_id')
+    .order('course_id', { ascending: true })
 
   if (error) {
     console.error('Course loading error:', error)
@@ -105,6 +113,7 @@ async function loadCourses(search = '') {
     return
   }
 
+  // Filter Courses
   const filtered = data.filter(course =>
     `${course.course_code || ''} ${course.course_name || ''} ${course.departments?.department_name || ''}`
       .toLowerCase()
@@ -116,10 +125,12 @@ async function loadCourses(search = '') {
     return
   }
 
+  // Display Courses
   table.innerHTML = `
     <table class="student-table">
       <thead>
         <tr>
+          <th>Course ID</th>
           <th>Course Code</th>
           <th>Course Name</th>
           <th>Department</th>
@@ -130,6 +141,7 @@ async function loadCourses(search = '') {
       <tbody>
         ${filtered.map(course => `
           <tr>
+            <td>${course.course_id}</td>
             <td>${escapeHTML(course.course_code || '')}</td>
             <td>${escapeHTML(course.course_name || '')}</td>
             <td>
@@ -147,15 +159,19 @@ async function loadCourses(search = '') {
     </table>
   `
 
+  // Edit Buttons
   table.querySelectorAll('[data-edit]').forEach(button => {
     button.onclick = () => editCourse(button.dataset.edit)
   })
 
+  // Delete Buttons
   table.querySelectorAll('[data-delete]').forEach(button => {
     button.onclick = () => deleteCourse(button.dataset.delete)
   })
 }
 
+
+// Add Course
 async function addCourse() {
   const departments = await getDepartments()
 
@@ -205,11 +221,14 @@ async function addCourse() {
   }
 
   alert('Course added successfully!')
+
   await loadCourses(
     document.querySelector('#search-course')?.value || ''
   )
 }
 
+
+// Edit Course
 async function editCourse(id) {
   const { data, error } = await supabase
     .from('courses')
@@ -296,6 +315,8 @@ async function editCourse(id) {
   )
 }
 
+
+// Delete Course
 async function deleteCourse(id) {
   if (!confirm('Are you sure you want to delete this course?')) {
     return
@@ -318,8 +339,10 @@ async function deleteCourse(id) {
   )
 }
 
+
+// Escape HTML
 function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
