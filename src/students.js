@@ -94,7 +94,7 @@ async function loadStudents(search = '') {
                 course_name
             )
         `)
-        .order('student_id');
+        .order('student_id', { ascending: true });
 
     if (error) {
         table.textContent = 'Error loading students: ' + error.message;
