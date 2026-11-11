@@ -116,6 +116,7 @@ async function loadStudents(search = '') {
         <table class="student-table">
             <thead>
                 <tr>
+                    <th>Student ID</th>
                     <th>Student No.</th>
                     <th>First Name</th>
                     <th>Last Name</th>
@@ -129,6 +130,7 @@ async function loadStudents(search = '') {
             <tbody>
                 ${filtered.map(student => `
                     <tr>
+                        <td>${student.student_id}</td>
                         <td>${escapeHTML(student.student_no)}</td>
                         <td>${escapeHTML(student.first_name)}</td>
                         <td>${escapeHTML(student.last_name)}</td>
@@ -168,7 +170,7 @@ async function getCourses() {
     const { data, error } = await supabase
         .from('courses')
         .select('course_id, course_code, course_name')
-        .order('course_code');
+        .order('course_id', { ascending: true });
 
     if (error) {
         alert('Unable to load courses: ' + error.message);
@@ -217,7 +219,7 @@ async function addStudent() {
         'Enter the Course ID from the list:\n\n' + courseOptions
     );
 
-    if (!selectedCourse) return;
+    if (selectedCourse === null) return;
 
     const course = courses.find(
         c => String(c.course_id) === selectedCourse.trim()
@@ -230,16 +232,14 @@ async function addStudent() {
 
     const { error } = await supabase
         .from('students')
-        .insert([
-            {
-                student_no: student_no.trim(),
-                first_name: first_name.trim(),
-                last_name: last_name.trim(),
-                year_level: Number(year_level),
-                email: email.trim(),
-                course_id: course.course_id
-            }
-        ]);
+        .insert([{
+            student_no: student_no.trim(),
+            first_name: first_name.trim(),
+            last_name: last_name.trim(),
+            year_level: Number(year_level),
+            email: email.trim(),
+            course_id: course.course_id
+        }]);
 
     if (error) {
         alert('Unable to add student: ' + error.message);
@@ -271,11 +271,26 @@ async function editStudent(id) {
     const first_name = prompt('First Name:', data.first_name);
     if (first_name === null) return;
 
+    if (!first_name.trim()) {
+        alert('First name cannot be empty.');
+        return;
+    }
+
     const last_name = prompt('Last Name:', data.last_name);
     if (last_name === null) return;
 
+    if (!last_name.trim()) {
+        alert('Last name cannot be empty.');
+        return;
+    }
+
     const email = prompt('Email:', data.email);
     if (email === null) return;
+
+    if (!email.trim()) {
+        alert('Email cannot be empty.');
+        return;
+    }
 
     const year_level = prompt('Year Level (1-4):', data.year_level);
 
